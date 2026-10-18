@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Package zip
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "install.ps1","uninstall.ps1","一键部署.bat","一键卸载.bat","README.md","files" `
+            -DestinationPath "WWMI-DLSS5-Deploy.zip" -Force
+
+      - name: Build exe (PS2EXE)
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          Install-Module ps2exe -Force -Scope CurrentUser -AllowClobber
+          Import-Module ps2exe
+          Invoke-ps2exe -inputFile "install.ps1"   -outputFile "一键部署.exe" -title "鸣潮 XXMI+ReShade+DLSS5 一键部署"
+          Invoke-ps2exe -inputFile "uninstall.ps1" -outputFile "一键卸载.exe" -title "鸣潮 XXMI+ReShade+DLSS5 一键卸载"
+
+      - name: Attach exe to zip if built
+        shell: pwsh
+        run: |
+          if (Test-Path "一键部署.exe") {
+            Compress-Archive -Path "一键部署.exe","一键卸载.exe" -DestinationPath "WWMI-DLSS5-Deploy-exe.zip" -Force
+          }
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          files: |
+            WWMI-DLSS5-Deploy.zip
+            WWMI-DLSS5-Deploy-exe.zip
+          body: |
+            鸣潮 XXMI + ReShade + DLSS5 一键部署包。
+
+            用法：解压后双击「一键部署.bat」（或 exe 版），再用官方启动器以 DX11 启动游戏。
+            详见 README.md。

@@ -1,0 +1,17 @@
+# Windows
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+
+# 日志与临时
+*.log
+*.log1
+ReShade.log*
+*.tmp
+Temp/
+
+# 分发产物
+*.zip
+*.exe
+!一键部署.bat
+!一键卸载.bat
