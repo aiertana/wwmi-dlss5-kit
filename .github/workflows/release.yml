@@ -18,12 +18,6 @@ jobs:
         with:
           lfs: true
 
-      - name: Package zip
-        shell: pwsh
-        run: |
-          Compress-Archive -Path "install.ps1","uninstall.ps1","一键部署.bat","一键卸载.bat","README.md","files" `
-            -DestinationPath "WWMI-DLSS5-Deploy.zip" -Force
-
       - name: Build exe (PS2EXE)
         shell: pwsh
         continue-on-error: true
@@ -34,29 +28,26 @@ jobs:
           ps2exe -inputFile "uninstall.ps1" -outputFile "一键卸载.exe" -title "XXMI+ReShade+DLSS5 卸载" -requireAdmin -UNICODEEncoding -x64
           Get-ChildItem *.exe -ErrorAction SilentlyContinue | ForEach-Object { "built: " + $_.Name + "  " + $_.Length + " bytes" }
 
-      - name: Attach exe to zip if built
+      - name: Package zip
         shell: pwsh
-        continue-on-error: true
         run: |
-          if (Test-Path "一键部署.exe") {
-            Compress-Archive -Path "一键部署.exe","一键卸载.exe" -DestinationPath "WWMI-DLSS5-Deploy-exe.zip" -Force
-            Get-Item "WWMI-DLSS5-Deploy-exe.zip" | ForEach-Object { "exe zip: " + $_.Length + " bytes" }
-          } else {
-            "PS2EXE 未产出 exe，跳过 exe 包"
-          }
+          $items = @("install.ps1","uninstall.ps1","一键部署.bat","一键卸载.bat","README.md","files")
+          if (Test-Path "一键部署.exe") { $items += @("一键部署.exe","一键卸载.exe") }
+          Compress-Archive -Path $items -DestinationPath "WWMI-DLSS5-Deploy.zip" -Force
+          Get-Item "WWMI-DLSS5-Deploy.zip" | ForEach-Object { "zip: " + $_.Length + " bytes" }
 
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           name: ${{ github.ref_name }}
           fail_on_unmatched_files: false
-          files: |
-            WWMI-DLSS5-Deploy.zip
-            WWMI-DLSS5-Deploy-exe.zip
+          files: WWMI-DLSS5-Deploy.zip
           body: |
-            鸣潮 XXMI + ReShade + DLSS5 一键部署包。
+            鸣潮 XXMI + ReShade + DLSS5 一键部署包（含 bat 与 exe 两种入口）。
 
-            - `WWMI-DLSS5-Deploy.zip`：脚本版，解压后右键「一键部署.bat」以管理员运行
-            - `WWMI-DLSS5-Deploy-exe.zip`：exe 版，双击自动申请管理员权限
+            用法：下载 `WWMI-DLSS5-Deploy.zip` 解压后，
+            - 双击 `一键部署.exe` 自动申请管理员权限运行；
+            - 或右键 `一键部署.bat` 以管理员身份运行。
 
-            部署后用官方启动器以 DX11 启动游戏；卸载运行「一键卸载」。详见 README.md。
+            部署完成后用官方启动器以 DX11 启动游戏（不要用 XXMI Launcher 启动）。
+            卸载运行 `一键卸载`。详见 README.md。

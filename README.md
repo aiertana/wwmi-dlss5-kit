@@ -1,5 +1,11 @@
 # 鸣潮 XXMI + ReShade + DLSS5 一键部署包
 
+[![Release](https://img.shields.io/github/v/release/aiertana/wwmi-dlss5-kit?style=flat-square)](https://github.com/aiertana/wwmi-dlss5-kit/releases/latest)
+
+## 下载
+
+到 [Releases](https://github.com/aiertana/wwmi-dlss5-kit/releases/latest) 下载 `WWMI-DLSS5-Deploy.zip`（约 143 MB）并解压，里面 bat 和 exe 两种入口都有。
+
 在**已安装鸣潮**和**已配置好 WWMI 的 XXMI Launcher**基础上，一键部署
 「3DMigoto(mod) + ReShade + DLSS5 神经渲染 + NVIDIA AI 插帧共存」的运行环境。
 
