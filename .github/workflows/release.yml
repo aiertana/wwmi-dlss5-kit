@@ -19,10 +19,10 @@ jobs:
           lfs: true
 
       - name: Package zip
-        shell: pwsh
+        shell: powershell
         run: |
-          Compress-Archive -Path "install.ps1","uninstall.ps1","一键部署.bat","一键卸载.bat","README.md","files" `
-            -DestinationPath "WWMI-DLSS5-Deploy.zip" -Force
+          7z a -tzip "WWMI-DLSS5-Deploy.zip" "install.ps1" "uninstall.ps1" "一键部署.bat" "一键卸载.bat" "README.md" "files" | Out-Null
+          Get-ChildItem *.zip | ForEach-Object { "zip: " + $_.Name + "  " + $_.Length + " bytes" }
 
       - name: Build exe (PS2EXE)
         shell: powershell
@@ -34,26 +34,28 @@ jobs:
           Import-Module ps2exe
           ps2exe -inputFile "install.ps1"   -outputFile "一键部署.exe" -title "XXMI+ReShade+DLSS5" -requireAdmin -UNICODEEncoding -x64
           ps2exe -inputFile "uninstall.ps1" -outputFile "一键卸载.exe" -title "XXMI+ReShade+DLSS5" -requireAdmin -UNICODEEncoding -x64
-          Get-ChildItem *.exe | ForEach-Object { "built: " + $_.Name + "  " + $_.Length + " bytes" }
+          Get-ChildItem *.exe -ErrorAction SilentlyContinue | ForEach-Object { "built: " + $_.Name + "  " + $_.Length + " bytes" }
 
       - name: Attach exe to zip if built
         shell: powershell
         run: |
           if (Test-Path "一键部署.exe") {
-            Compress-Archive -Path "一键部署.exe","一键卸载.exe" -DestinationPath "WWMI-DLSS5-Deploy-exe.zip" -Force
+            7z a -tzip "WWMI-DLSS5-Deploy-exe.zip" "一键部署.exe" "一键卸载.exe" | Out-Null
           } else {
             "PS2EXE 未产出 exe，跳过 exe 包"
           }
+          Get-ChildItem *.zip | ForEach-Object { "zip: " + $_.Name + "  " + $_.Length + " bytes" }
 
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           name: ${{ github.ref_name }}
+          fail_on_unmatched_files: false
           files: |
             WWMI-DLSS5-Deploy.zip
             WWMI-DLSS5-Deploy-exe.zip
           body: |
             鸣潮 XXMI + ReShade + DLSS5 一键部署包。
 
-            用法：解压后双击「一键部署.bat」（或 exe 版），再用官方启动器以 DX11 启动游戏。
-            详见 README.md。
+            用法：解压后右键「一键部署.bat」以管理员运行（exe 版会自动提权），再用官方启动器以 DX11 启动游戏。
+            卸载同理运行「一键卸载」。详见 README.md。
