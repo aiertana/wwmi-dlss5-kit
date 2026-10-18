@@ -25,19 +25,24 @@ jobs:
             -DestinationPath "WWMI-DLSS5-Deploy.zip" -Force
 
       - name: Build exe (PS2EXE)
-        shell: pwsh
+        shell: powershell
         continue-on-error: true
         run: |
-          Install-Module ps2exe -Force -Scope CurrentUser -AllowClobber
+          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+          Install-PackageProvider -Name NuGet -Force -Scope CurrentUser | Out-Null
+          Install-Module ps2exe -Force -Scope CurrentUser -AllowClobber -SkipPublisherCheck
           Import-Module ps2exe
-          Invoke-ps2exe -inputFile "install.ps1"   -outputFile "一键部署.exe" -title "鸣潮 XXMI+ReShade+DLSS5 一键部署"
-          Invoke-ps2exe -inputFile "uninstall.ps1" -outputFile "一键卸载.exe" -title "鸣潮 XXMI+ReShade+DLSS5 一键卸载"
+          ps2exe -inputFile "install.ps1"   -outputFile "一键部署.exe" -title "XXMI+ReShade+DLSS5" -requireAdmin -UNICODEEncoding -x64
+          ps2exe -inputFile "uninstall.ps1" -outputFile "一键卸载.exe" -title "XXMI+ReShade+DLSS5" -requireAdmin -UNICODEEncoding -x64
+          Get-ChildItem *.exe | ForEach-Object { "built: " + $_.Name + "  " + $_.Length + " bytes" }
 
       - name: Attach exe to zip if built
-        shell: pwsh
+        shell: powershell
         run: |
           if (Test-Path "一键部署.exe") {
             Compress-Archive -Path "一键部署.exe","一键卸载.exe" -DestinationPath "WWMI-DLSS5-Deploy-exe.zip" -Force
+          } else {
+            "PS2EXE 未产出 exe，跳过 exe 包"
           }
 
       - name: Release
