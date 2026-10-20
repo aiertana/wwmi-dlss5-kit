@@ -162,10 +162,8 @@ foreach ($d in @("Mods", "Core", "ShaderFixes", "ShaderCache", "Screenshots", "q
 }
 
 # ---------- 4. 部署加载器与运行时 ----------
-# 注意：这里绝不能部署 d3d11.dll。3DMigoto 已由 ASI Loader 以 scripts\d3d11.asi 加载，
-# 若系统目录下再放一份 d3d11.dll，会产生两份 3DMigoto 互相挂钩，进程递归死锁后崩溃 (0xc0000005)。
 Step "部署加载器与 DLSS 运行时"
-foreach ($n in @("dxgi.dll", "nvngx_dlss.dll", "nvngx_dlssnr.dll")) {
+foreach ($n in @("d3d11.dll", "dxgi.dll", "nvngx_dlss.dll", "nvngx_dlssnr.dll")) {
     $how = Deploy-File (Join-Path $filesBin $n) (Join-Path $GameDir $n)
     Ok "$n（$how）"
 }
